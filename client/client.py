@@ -26,7 +26,7 @@ def create_book(title, author_name, author_email, year, genre, ratings):
 
 
     }
-    response = requests.post(f"{BASE_URL}/books/post", json=book)
+    response = requests.post(f"{BASE_URL}/books/create", json=book)
     print_response(response)
 
 def update_book(book_id, title, author_name, author_email, year, genre, ratings=None):
@@ -40,7 +40,7 @@ def update_book(book_id, title, author_name, author_email, year, genre, ratings=
         "genre": genre,
         "ratings": ratings
     }
-    response = requests.put(f"{BASE_URL}/books/put/{book_id}", json=book)
+    response = requests.put(f"{BASE_URL}/books/update/{book_id}", json=book)
     print_response(response)
 
 def delete_book(book_id):

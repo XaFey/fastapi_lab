@@ -1,6 +1,6 @@
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException
-from fastapi.security import HTTPBasic
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 import uvicorn
 
@@ -19,13 +19,14 @@ class Book(BaseModel):
     #add book ratings
     ratings: List[int] = []
 ####SECURITY THING
-#authentication and authorization
+#authentication and authorization with httpbasic
 security = HTTPBasic()
 
-
-
-
-
+def security_check(credentials: HTTPBasicCredentials= Depends(security)):
+    if credentials.username == "admin" and credentials.password == "password":
+        return True
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 #in-memory dataset
 books = [
@@ -63,7 +64,7 @@ async def get_book_by_id(book_id: int):
     raise HTTPException(status_code=404, detail="Book not found")
 
 #POST a new book
-@app.post("/books/post/", response_model=Book)
+@app.post("/books/create/", response_model=Book, dependencies=[Depends(security_check)])
 async def create_book(book: Book):
     if any(b.id == book.id for b in books):
         raise HTTPException(status_code=400, detail="Book with this ID already exists")
@@ -71,7 +72,7 @@ async def create_book(book: Book):
     return book
 
 #PUT a new book
-@app.put("/books/put/{book_id}", response_model=Book)
+@app.put("/books/update/{book_id}", response_model=Book,dependencies=[Depends(security_check)])
 async def update_book(book_id: int, book: Book):
     for i, book in enumerate(books):
         if book.id == book_id:
@@ -80,7 +81,7 @@ async def update_book(book_id: int, book: Book):
     raise HTTPException(status_code=404, detail="Book not found")
 
 #DELETE a new book
-@app.delete("/books/delete/{book_id}", response_model=Book)
+@app.delete("/books/delete/{book_id}", response_model=Book,dependencies=[Depends(security_check)])
 async def delete_book(book_id: int):
     for i, book in enumerate(books):
         if book.id == book_id:
