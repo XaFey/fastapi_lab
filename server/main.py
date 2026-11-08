@@ -26,9 +26,8 @@ def security_check(credentials: HTTPBasicCredentials = Depends(security)):
     if credentials.username == "admin" and credentials.password == "password":
         return True
     raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Unauthorized",
-        headers={"WWW-Authenticate": "Basic"}
+        status_code = 401,
+        detail="Unauthorized"
     )
 
 # In-memory dataset
@@ -102,4 +101,4 @@ async def delete_book(book_id: int):
     raise HTTPException(status_code=404, detail="Book not found")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
