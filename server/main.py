@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
+from fastapi.security import HTTPBasic
 from pydantic import BaseModel
 import uvicorn
 
@@ -17,6 +18,14 @@ class Book(BaseModel):
     genre: str
     #add book ratings
     ratings: List[int] = []
+####SECURITY THING
+#authentication and authorization
+security = HTTPBasic()
+
+
+
+
+
 
 #in-memory dataset
 books = [
