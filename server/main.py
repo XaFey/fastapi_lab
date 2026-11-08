@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
-from pydatic import BaseModel
+from pydantic import BaseModel
 import uvicorn
 
 app = FastAPI()
@@ -15,6 +15,8 @@ class Book(BaseModel):
     author: Author
     year: int
     genre: str
+    #add book ratings
+    ratings: List[int] = []
 
 #in-memory dataset
 books = [
@@ -23,7 +25,8 @@ books = [
         title="The Great Gatsby",
         author=Author(name="F. Scott Fitzgerald", email="fscottfitzgerald@example.com"),
         year=1925,
-        genre="Fiction"
+        genre="Fiction",
+        ratings=[1,2,4]
 
     ),
     Book(
@@ -31,17 +34,19 @@ books = [
         title= "1984",
         author=Author(name="George Orwell", email="georgeorwell@example.com"),
         year=1949,
-        genre="Dystopian"   
+        genre="Dystopian",
+        ratings=[4,5,3]
+
     )
 ]
 
 #Get all books
-@app.get("/books", response_model=List[Book])
+@app.get("/books/all/", response_model=List[Book])
 async def get_all_books():
     return books
 
 #Get a book by ID
-@app.get("/books/{book_id}", response_model=Book)
+@app.get("/books/get/{book_id}", response_model=Book)
 async def get_book_by_id(book_id: int):
     for book in books:
         if book.id == book_id:
@@ -49,7 +54,7 @@ async def get_book_by_id(book_id: int):
     raise HTTPException(status_code=404, detail="Book not found")
 
 #POST a new book
-@app.post("/books", response_model=Book)
+@app.post("/books/post/", response_model=Book)
 async def create_book(book: Book):
     if any(b.id == book.id for b in books):
         raise HTTPException(status_code=400, detail="Book with this ID already exists")
@@ -57,7 +62,7 @@ async def create_book(book: Book):
     return book
 
 #PUT a new book
-@app.put("/books/{book_id}", response_model=Book)
+@app.put("/books/put/{book_id}", response_model=Book)
 async def update_book(book_id: int, book: Book):
     for i, book in enumerate(books):
         if book.id == book_id:
@@ -66,13 +71,26 @@ async def update_book(book_id: int, book: Book):
     raise HTTPException(status_code=404, detail="Book not found")
 
 #DELETE a new book
-@app.delete("/books/{book_id}", response_model=Book)
+@app.delete("/books/delete/{book_id}", response_model=Book)
 async def delete_book(book_id: int):
     for i, book in enumerate(books):
         if book.id == book_id:
             books.pop(i)
             return {"message": "Book deleted"}
     raise HTTPException(status_code=404, detail="Book not found")
+
+#Search books by genre
+@app.get("/books/search/{genre}", response_model=List[Book])
+async def search_books_by_genre(genre: str):
+    for i in books:
+        if i.genre.lower()== genre.lower():
+            return {"message": "Book found", "book": i}
+    raise HTTPException(status_code=404, detail="Book not found")
+
+#Book Count
+@app.get("books/count")
+async def book_count():
+    return {"count": len(books)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
